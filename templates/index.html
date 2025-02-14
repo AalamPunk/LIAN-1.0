@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pathfinding Visualizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+    <div id="sidebar">
+        <button id="toggleSidebar">&#9776;</button>
+        <div class="sidebar-content">
+            <h1>Pathfinding Visualizer</h1>
+            <p>Click on the map to add walls. Click on the start and end points to move them.</p>
+            <p>Choose an algorithm and click visualize to see the path.</p>
+            <p>Click clear to reset the map.</p>
+            <!-- PDF Report Button -->
+            <button id="viewReportBtn">View Report</button>
+            <!-- PDF Viewer Container -->
+            <div id="pdfContainer" style="display: none; margin-top: 15px;">
+                <iframe src="/report" width="100%" height="400px" style="border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div id="map" style="height: 100vh; position: relative;"></div>
+    <!-- From Uiverse.io by vinodjangid07 --> 
+<div class="InputContainer">
+    <input placeholder="Search.." id="searchInput" class="input" name="text" type="text">
+    <button id="searchBtn">Search</button>
+</div>
+    <div id="controls">
+        <select id="algorithm">
+            <option value="best">Best First Search</option>
+            <option value="dijkstra">Dijkstra</option>
+            <option value="astar">A*</option>
+            <option value="bf">Bellman-Ford</option>
+        </select>
+        <button onclick="clearMap()">Clear</button>
+        <button id="visualizeBtn" onclick="calculatePath()">Visualize</button>
+    </div>
+    <footer id="dataBar"></footer>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Use default_lat and default_lon passed from Flask.
+        var defaultLat = JSON.parse('{{ default_lat | tojson | safe }}');
+        var defaultLon = JSON.parse('{{ default_lon | tojson | safe }}');
+        // Initialize map with Mumbai coordinates.
+        var map = L.map('map').setView([defaultLat, defaultLon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    </script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

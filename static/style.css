@@ -1,0 +1,194 @@
+#map {
+    height: 600px;
+    width: 100%;
+}
+
+#controls {
+    position: absolute;
+    top: 10px;           /* adjust vertical position as needed */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2100;       /* ensure it stays above the sidebar */
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#infoBar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 0, 0.8);
+    color: black;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 0 10px 5px rgba(255, 255, 0, 0.8);
+    display: none;
+    z-index: 1500;
+}
+
+/* Improved Design for Yellow Data Bar */
+#dataBar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: 90%;
+    background: linear-gradient(135deg, #ffeb3b, #ffc107);
+    color: #333;
+    padding: 15px 30px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1500;
+}
+
+/* Improved Sidebar Styling */
+/* filepath: /c:/Users/ozair/OneDrive/Documents/DBMS/New folder (3)/pathfinding-visualizer/static/style.css */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;  /* slightly narrower for a modern look */
+    height: 100vh;
+    background: linear-gradient(135deg, #2C3E50, #4CA1AF);
+    color: #fff;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 2000;
+    padding: 20px;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+/* When collapsed, slide almost off-screen but leave room for the toggle */
+#sidebar.collapsed {
+    transform: translateX(-240px);  /* leaves about 40px visible */
+}
+
+/* Sidebar content styling for spacing */
+.sidebar-content {
+    margin-top: 50px;
+}
+
+/* Updated Toggle Button Styling */
+#toggleSidebar {
+    position: absolute;
+    top: 20px;
+    left: 100%;             /* Position at the right edge of the sidebar */
+    transform: translateX(-40px);  /* Pull it back so it's visible */
+    background: #2C3E50;
+    border: none;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 0 5px 5px 0;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+    outline: none;
+    z-index: 2100;           /* Ensure it's above the sidebar */
+}
+
+/* filepath: /c:/Users/ozair/OneDrive/Documents/DBMS/New folder (3)/pathfinding-visualizer/static/style.css */
+.glow-polyline {
+    filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8));
+}
+
+#loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3000;
+    display: none; /* hidden by default */
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.spinner {
+   border: 8px solid #f3f3f3;
+   border-top: 8px solid #3498db;
+   border-radius: 50%;
+   width: 60px;
+   height: 60px;
+   animation: spin 1s linear infinite;
+   margin: 0 auto 10px;
+}
+
+@keyframes spin {
+   0% { transform: rotate(0deg); }
+   100% { transform: rotate(360deg); }
+}
+
+/* From Uiverse.io by vinodjangid07 */ 
+/* Position and style the search container at the top right */
+.InputContainer {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    z-index: 2200; /* ensure it's above the map layer */
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 8px 12px;
+    border-radius: 30px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+}
+
+/* Style the search input field */
+.InputContainer .input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 6px 10px;
+}
+
+/* Style the search button */
+.InputContainer button {
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 12px;
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.InputContainer button:hover {
+    background: #2980b9;
+}
+
+/* Improved styling for the PDF Report button */
+#viewReportBtn {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+#viewReportBtn:hover {
+    background: linear-gradient(135deg, #feb47b, #ff7e5f);
+    transform: translateY(-2px);
+}
+
+#viewReportBtn:active {
+    transform: translateY(0);
+}
