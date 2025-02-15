@@ -9,10 +9,46 @@
     <div id="sidebar">
         <button id="toggleSidebar">&#9776;</button>
         <div class="sidebar-content">
-            <h1>Pathfinding Visualizer</h1>
-            <p>Click on the map to add walls. Click on the start and end points to move them.</p>
-            <p>Choose an algorithm and click visualize to see the path.</p>
-            <p>Click clear to reset the map.</p>
+            <h2>LIAN</h2>
+            <p>(Location Intelligence Algorithm Network)</p>
+            <p>Explore, Learn, Visualize</p>
+            <hr>
+            <h3>Pathfinding Algorithms</h3>
+            <ul>
+                <li>A* Algorithm</li>
+                <li>Dijkstra’s Algorithm</li>
+                <li>Greedy Best-First Search</li>
+                <li>Bellman-Ford Algorithm</li>
+            </ul>
+            <hr>
+            <h3>Map Controls</h3>
+            <ul>
+                <li>Click on the map: Select start point</li>
+                <li>Click within range: Select end point</li>
+                <li>Reset: Clear map</li>
+            </ul>
+            <hr>
+            <h3>Visualization Settings</h3>
+            <ul>
+                <li>Toggle Exploration Process</li>
+                <li>Adjust Speed</li>
+                <li>Highlight Final Path</li>
+            </ul>
+            <hr>
+            <h3>About LIAN</h3>
+            <p>
+                Bridging the gap between theoretical and visual learning, LIAN helps users understand how
+                pathfinding algorithms work in real-world navigation.
+            </p>
+            <hr>
+            <h3>Contacts</h3>
+            <ul>
+                <li>📧 Email: support@lian.com</li>
+                <li>🌐 Website: www.lian.com</li>
+                <li>🐙 GitHub: <a href="https://github.com/your-repo" target="_blank">github.com/your-repo</a></li>
+                <li>📢 Community: Join our forum or Discord for discussions</li>
+            </ul>
+            <hr>
             <!-- PDF Report Button -->
             <button id="viewReportBtn">View Report</button>
             <!-- PDF Viewer Container -->
@@ -24,10 +60,10 @@
 
     <div id="map" style="height: 100vh; position: relative;"></div>
     <!-- From Uiverse.io by vinodjangid07 --> 
-<div class="InputContainer">
-    <input placeholder="Search.." id="searchInput" class="input" name="text" type="text">
-    <button id="searchBtn">Search</button>
-</div>
+    <div class="InputContainer">
+        <input placeholder="Search.." id="searchInput" class="input" name="text" type="text">
+        <button id="searchBtn">Search</button>
+    </div>
     <div id="controls">
         <select id="algorithm">
             <option value="best">Best First Search</option>
@@ -49,7 +85,7 @@
         // Use default_lat and default_lon passed from Flask.
         var defaultLat = JSON.parse('{{ default_lat | tojson | safe }}');
         var defaultLon = JSON.parse('{{ default_lon | tojson | safe }}');
-        // Initialize map with Mumbai coordinates.
+        // Initialize map with default coordinates.
         var map = L.map('map').setView([defaultLat, defaultLon], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     </script>

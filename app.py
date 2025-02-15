@@ -222,7 +222,13 @@ def get_path():
         final_route_coords.pop()
 
     # Build exploration coordinates as node centers.
-    exploration_coords = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in visited_nodes]
+    # Instead of flat tuples, build objects with more details.
+    exploration_markers = [{
+        "lat": G.nodes[n]['y'],
+        "lon": G.nodes[n]['x'],
+        "radius": 10,  # example radius in pixels/units; adjust on front-end as needed
+        "order": idx + 1  # order in which the node was expanded
+    } for idx, n in enumerate(visited_nodes)]
 
     # Build exploration segments based on edges between visited nodes.
     exploration_segments = []
@@ -252,7 +258,7 @@ def get_path():
 
     return jsonify({
         "final_path": final_route_coords,
-        "exploration": exploration_coords,  # Use node centers
+        "exploration": exploration_markers,
         "distance": total_distance,
         "num_explored": len(visited_nodes),
         "num_final_path": len(final_path)

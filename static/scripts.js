@@ -261,3 +261,6 @@ if (viewReportBtn) {
         }
     });
 }
+
+L.circleMarker([marker.lat, marker.lon], {radius: marker.radius}).addTo(map)
+    .bindPopup("Order: " + marker.order);
