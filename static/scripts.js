@@ -208,6 +208,14 @@ function renderExplorationSegments(segments) {
     });
 }
 
+function renderExplorationMarkers(markers) {
+    markers.forEach(marker => {
+        L.circleMarker([marker.lat, marker.lon], { radius: marker.radius })
+         .addTo(map)
+         .bindPopup("Order: " + marker.order);
+    });
+}
+
 // Only add the toggle event listener if the element exists
 var sidebarToggle = document.getElementById('toggleSidebar');
 if (sidebarToggle) {
@@ -262,5 +270,42 @@ if (viewReportBtn) {
     });
 }
 
-L.circleMarker([marker.lat, marker.lon], {radius: marker.radius}).addTo(map)
-    .bindPopup("Order: " + marker.order);
+// Example: After a successful fetch using actual cached data
+fetch('/get-path', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        start_lat: startMarker.getLatLng().lat,
+        start_lon: startMarker.getLatLng().lng,
+        end_lat: endMarker.getLatLng().lat,
+        end_lon: endMarker.getLatLng().lng,
+        algorithm: document.getElementById('algorithm').value
+    })
+})
+.then(response => response.json())
+.then(data => {
+    // data.final_path holds an array of [lat, lon] coordinates.
+    renderAnimatedPath(data.final_path);
+});
+
+function renderAnimatedPath(finalPathCoords) {
+    console.log("Animating path:", finalPathCoords);
+    // Remove any existing route layer.
+    if (window.routeLayer) {
+        map.removeLayer(window.routeLayer);
+    }
+    // Create an animated ant path using leaflet-ant-path.
+    window.routeLayer = L.polyline.antPath(finalPathCoords, {
+        paused: false,
+        reverse: false,
+        hardwareAccelerated: true,
+        delay: 300,       
+        dashArray: [10, 20],
+        weight: 5,
+        color: '#00FF00', // Use a bright color to ensure visibility.
+        pulseColor: '#FFFFFF',
+        opacity: 0.8,
+        className: 'glow-polyline'
+    });
+    window.routeLayer.addTo(map);
+}
