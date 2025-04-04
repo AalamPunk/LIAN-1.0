@@ -2,16 +2,30 @@ let startMarker = null;
 let endMarker = null;
 let routeLayer = null;
 let explorationLayer = null;
+let radarCircle = null;
 
-
-
-// Click handlers
+// Updated click handler with radar UI element
 map.on('click', (e) => {
     if (!startMarker) {
         startMarker = L.marker(e.latlng).addTo(map);
+        // Create a radar circle with a 5 km radius around the start point
+        radarCircle = L.circle(e.latlng, {
+            radius: 1000, // 5 km radius
+            color: '#3388ff',
+            fillColor: '#3388ff',
+            fillOpacity: 0.2,
+            dashArray: '5,5'
+        }).addTo(map);
     } else if (!endMarker) {
-        endMarker = L.marker(e.latlng).addTo(map);
-        // Removed automatic call to calculatePath()
+        // Ensure the end point is within the radar circle
+        if (radarCircle && radarCircle.getBounds().contains(e.latlng)) {
+            endMarker = L.marker(e.latlng).addTo(map);
+            // Optionally remove the radar circle once the end point is chosen
+            map.removeLayer(radarCircle);
+            radarCircle = null;
+        } else {
+            alert("Please select an end point within the 5 km radius.");
+        }
     }
 });
 
@@ -308,4 +322,18 @@ function renderAnimatedPath(finalPathCoords) {
         className: 'glow-polyline'
     });
     window.routeLayer.addTo(map);
+}
+
+var screenshotBtn = document.getElementById('screenshotBtn');
+
+if (screenshotBtn) {
+    screenshotBtn.addEventListener('click', function() {
+        console.log("Screenshot button clicked.");
+        html2canvas(document.getElementById('map')).then(canvas => {
+            var link = document.createElement('a');
+            link.href = canvas.toDataURL("image/png");
+            link.download = 'final-path-screenshot.png';
+            link.click();
+        }).catch(error => console.error("Screenshot error:", error));
+    });
 }
