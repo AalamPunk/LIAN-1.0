@@ -4,7 +4,7 @@
     <title>Pathfinding Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" href="data:," />
 </head>
 <body>
     <div id="sidebar">
@@ -44,9 +44,9 @@
             <hr>
             <h3>Contacts</h3>
             <ul>
-                <li>📧 Email: support@lian.com</li>
+                <li>📧 Email: supportlian@gmail.com</li>
                 <li>🌐 Website: www.lian.com</li>
-                <li>🐙 GitHub: <a href="https://github.com/your-repo" target="_blank">github.com/your-repo</a></li>
+                <li>🐙 GitHub: <a href="https://github.com/AalamPunk/LIAN-1.0" target="_blank">github.com/your-repo</a></li>
                 <li>📢 Community: Join our forum or Discord for discussions</li>
             </ul>
             <hr>
@@ -54,7 +54,7 @@
             <button id="viewReportBtn">View Report</button>
             <!-- PDF Viewer Container -->
             <div id="pdfContainer" style="display: none; margin-top: 15px;">
-                <iframe src="/report" width="100%" height="400px" style="border: none;"></iframe>
+                <iframe src="{{ url_for('static', filename='report/LIAN_report_review_2.pdf') }}" width="100%" height="400px" style="border: none;"></iframe>
             </div>
         </div>
     </div>
@@ -94,5 +94,10 @@
     </script>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        document.getElementById('viewReportBtn').addEventListener('click', function() {
+            window.open("{{ url_for('static', filename='report/LIAN report review 2.pdf') }}", "_blank");
+        });
+    </script>
 </body>
 </html>

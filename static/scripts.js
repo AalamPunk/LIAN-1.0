@@ -4,33 +4,29 @@ let routeLayer = null;
 let explorationLayer = null;
 let radarCircle = null;
 
-// Updated click handler with radar UI element
 map.on('click', (e) => {
     if (!startMarker) {
         startMarker = L.marker(e.latlng).addTo(map);
-        // Create a radar circle with a 5 km radius around the start point
         radarCircle = L.circle(e.latlng, {
-            radius: 1000, // 5 km radius
+            radius: 1000,
             color: '#3388ff',
             fillColor: '#3388ff',
             fillOpacity: 0.2,
             dashArray: '5,5'
         }).addTo(map);
     } else if (!endMarker) {
-        // Ensure the end point is within the radar circle
         if (radarCircle && radarCircle.getBounds().contains(e.latlng)) {
             endMarker = L.marker(e.latlng).addTo(map);
-            // Optionally remove the radar circle once the end point is chosen
             map.removeLayer(radarCircle);
             radarCircle = null;
         } else {
-            alert("Please select an end point within the 5 km radius.");
+            alert("Please select an end point within the 1 km radius.");
         }
     }
 });
 
-// Animate exploration: add one circle marker at a time.
 function animateExploration(explorationCoords, callback) {
+    if (explorationLayer) map.removeLayer(explorationLayer);
     explorationLayer = L.layerGroup().addTo(map);
     let index = 0;
     function drawNext() {
@@ -39,11 +35,9 @@ function animateExploration(explorationCoords, callback) {
             let lat, lng;
             if (coord) {
                 if (Array.isArray(coord)) {
-                    // Assuming the coordinate array is [lat, lng] or [lat, lon]
                     lat = parseFloat(coord[0]);
                     lng = parseFloat(coord[1]);
                 } else if (typeof coord === 'object') {
-                    // Try to get lng or lon
                     if (coord.lat != null && (coord.lng != null || coord.lon != null)) {
                         lat = parseFloat(coord.lat);
                         lng = coord.lng != null ? parseFloat(coord.lng) : parseFloat(coord.lon);
@@ -52,11 +46,9 @@ function animateExploration(explorationCoords, callback) {
             }
             if (!isNaN(lat) && !isNaN(lng)) {
                 L.circleMarker([lat, lng], { color: 'blue', radius: 5 }).addTo(explorationLayer);
-            } else {
-                console.warn(`Skipping invalid coordinate at index ${index}:`, coord);
             }
             index++;
-            setTimeout(drawNext, 100); // Delay between markers
+            setTimeout(drawNext, 100);
         } else {
             if (callback) callback();
         }
@@ -64,74 +56,32 @@ function animateExploration(explorationCoords, callback) {
     drawNext();
 }
 
-function animateExplorationEdges(segments, onComplete) {
-    if (!segments || segments.length === 0) {
-        if (onComplete) onComplete();
-        return;
-    }
-    explorationLayer = L.layerGroup().addTo(map);
-    let index = 0;
-    function drawNext() {
-        if (index < segments.length) {
-            // Draw the current edge segment.
-            L.polyline(segments[index], { color: 'blue', weight: 3 }).addTo(explorationLayer);
-            index++;
-            // Delay (in milliseconds) between drawing each segment.
-            setTimeout(drawNext, 100);  // Adjust delay as needed to slow/speed the animation.
-        } else {
-            if (onComplete) onComplete();
-        }
-    }
-    drawNext();
-}
-
-function animateExplorationBranches(segments, onComplete) {
-    if (!segments || segments.length === 0) {
-        if (onComplete) onComplete();
-        return;
-    }
-    explorationLayer = L.layerGroup().addTo(map);
-    let completedBranches = 0;
-
-    segments.forEach(segment => {
-        // For each branch, create an empty polyline
-        let branchLine = L.polyline([], { color: 'blue', weight: 3 }).addTo(explorationLayer);
-        let index = 0;
-        function animateBranch() {
-            if (index < segment.length) {
-                branchLine.addLatLng(segment[index]);
-                index++;
-                // Delay between adding successive points (adjust as needed)
-                setTimeout(animateBranch, 50);
-            } else {
-                completedBranches++;
-                // When all branches finished, call onComplete
-                if (completedBranches === segments.length && onComplete) {
-                    onComplete();
-                }
-            }
-        }
-        animateBranch();
-    });
-}
-
-// After receiving finalCoords from the backend, create the route layer with glowing effect:
-routeLayer = L.polyline([], {
-    color: 'red',
-    weight: 5,
-    className: 'glow-polyline'
-}).addTo(map);
-
-// Then animate the final path as before:
 function animateFinalPath(finalCoords, callback) {
-    let index = 1;
+    if (routeLayer) map.removeLayer(routeLayer);
+    routeLayer = L.polyline([], {
+        color: 'red',
+        weight: 5,
+        className: 'glow-polyline'
+    }).addTo(map);
+
+    const uniqueCoords = [];
+    const seen = new Set();
+
+    finalCoords.forEach(coord => {
+        const key = coord.join(',');
+        if (!seen.has(key)) {
+            seen.add(key);
+            uniqueCoords.push(coord);
+        }
+    });
+
+    let index = 0;
     function animate() {
-        if (index >= finalCoords.length) {
+        if (index >= uniqueCoords.length) {
             if (callback) callback();
             return;
         }
-        // Append the next coordinate to the glowing polyline
-        routeLayer.addLatLng(finalCoords[index]);
+        routeLayer.addLatLng(uniqueCoords[index]);
         index++;
         requestAnimationFrame(animate);
     }
@@ -140,18 +90,10 @@ function animateFinalPath(finalCoords, callback) {
 
 function displayInfoBar(data) {
     let dataBar = document.getElementById('dataBar');
-    console.log("Raw distance from backend:", data.distance);
-
     let distance = parseFloat(data.distance);
-    if (isNaN(distance)) {
-        distance = 0;
-    }
-    
-    // Convert the distance from meters to kilometers.
+    if (isNaN(distance)) distance = 0;
     let kmDistance = distance / 1000;
-    
     let distanceStr = `${kmDistance.toFixed(2)} km`;
-    
     dataBar.innerHTML = `Distance: ${distanceStr} | Explored Nodes: ${data.num_explored} | Final Path Nodes: ${data.num_final_path}`;
     dataBar.style.display = "block";
 }
@@ -160,8 +102,15 @@ function calculatePath() {
     document.getElementById('loading').style.display = 'block';
 
     const algorithm = document.getElementById('algorithm').value;
-    if (explorationLayer) map.removeLayer(explorationLayer);
-    if (routeLayer) map.removeLayer(routeLayer);
+
+    if (explorationLayer) {
+        map.removeLayer(explorationLayer);
+        explorationLayer = null;
+    }
+    if (routeLayer) {
+        map.removeLayer(routeLayer);
+        routeLayer = null;
+    }
 
     fetch('/get-path', {
         method: 'POST',
@@ -176,19 +125,9 @@ function calculatePath() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.exploration && Array.isArray(data.exploration) && data.exploration.length > 0 &&
-            data.final_path && Array.isArray(data.final_path) && data.final_path.length > 0) {
+        if (data.exploration && Array.isArray(data.exploration) &&
+            data.final_path && Array.isArray(data.final_path)) {
 
-            console.log("Exploration coordinates:", data.exploration);
-
-            // Create the final path polyline with glowing effect.
-            routeLayer = L.polyline([], {
-                color: 'red',
-                weight: 5,
-                className: 'glow-polyline'
-            }).addTo(map);
-
-            // Animate exploration nodes first, then animate final path.
             animateExploration(data.exploration, function() {
                 animateFinalPath(data.final_path, function() {
                     displayInfoBar(data);
@@ -215,22 +154,6 @@ function clearMap() {
     endMarker = null;
 }
 
-function renderExplorationSegments(segments) {
-    explorationLayer = L.layerGroup().addTo(map);
-    segments.forEach(segment => {
-        L.polyline(segment, { color: 'blue', weight: 3 }).addTo(explorationLayer);
-    });
-}
-
-function renderExplorationMarkers(markers) {
-    markers.forEach(marker => {
-        L.circleMarker([marker.lat, marker.lon], { radius: marker.radius })
-         .addTo(map)
-         .bindPopup("Order: " + marker.order);
-    });
-}
-
-// Only add the toggle event listener if the element exists
 var sidebarToggle = document.getElementById('toggleSidebar');
 if (sidebarToggle) {
     sidebarToggle.addEventListener('click', function() {
@@ -238,7 +161,6 @@ if (sidebarToggle) {
     });
 }
 
-// Add event listeners for the search button and 'Enter' key in the input.
 document.getElementById('searchBtn').addEventListener('click', searchLocation);
 document.getElementById('searchInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -252,14 +174,12 @@ function searchLocation() {
         alert("Please enter a location");
         return;
     }
-    // Use Nominatim's geocoding API to get the location's coordinates.
     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
       .then(response => response.json())
       .then(data => {
          if (data && data.length > 0) {
               const lat = parseFloat(data[0].lat);
               const lon = parseFloat(data[0].lon);
-              // Center the map on the returned coordinates. Adjust zoom level as needed.
               map.setView([lat, lon], 13);
          } else {
               alert("Location not found.");
@@ -275,60 +195,15 @@ var viewReportBtn = document.getElementById('viewReportBtn');
 if (viewReportBtn) {
     viewReportBtn.addEventListener('click', function() {
         var pdfContainer = document.getElementById('pdfContainer');
-        // Toggle display
-        if (pdfContainer.style.display === 'none' || pdfContainer.style.display === '') {
-            pdfContainer.style.display = 'block';
-        } else {
-            pdfContainer.style.display = 'none';
-        }
+        var isExpanded = pdfContainer.style.display === 'block';
+        pdfContainer.style.display = isExpanded ? 'none' : 'block';
+        viewReportBtn.setAttribute('aria-expanded', !isExpanded); // Update aria-expanded
     });
-}
-
-// Example: After a successful fetch using actual cached data
-fetch('/get-path', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        start_lat: startMarker.getLatLng().lat,
-        start_lon: startMarker.getLatLng().lng,
-        end_lat: endMarker.getLatLng().lat,
-        end_lon: endMarker.getLatLng().lng,
-        algorithm: document.getElementById('algorithm').value
-    })
-})
-.then(response => response.json())
-.then(data => {
-    // data.final_path holds an array of [lat, lon] coordinates.
-    renderAnimatedPath(data.final_path);
-});
-
-function renderAnimatedPath(finalPathCoords) {
-    console.log("Animating path:", finalPathCoords);
-    // Remove any existing route layer.
-    if (window.routeLayer) {
-        map.removeLayer(window.routeLayer);
-    }
-    // Create an animated ant path using leaflet-ant-path.
-    window.routeLayer = L.polyline.antPath(finalPathCoords, {
-        paused: false,
-        reverse: false,
-        hardwareAccelerated: true,
-        delay: 300,       
-        dashArray: [10, 20],
-        weight: 5,
-        color: '#00FF00', // Use a bright color to ensure visibility.
-        pulseColor: '#FFFFFF',
-        opacity: 0.8,
-        className: 'glow-polyline'
-    });
-    window.routeLayer.addTo(map);
 }
 
 var screenshotBtn = document.getElementById('screenshotBtn');
-
 if (screenshotBtn) {
     screenshotBtn.addEventListener('click', function() {
-        console.log("Screenshot button clicked.");
         html2canvas(document.getElementById('map')).then(canvas => {
             var link = document.createElement('a');
             link.href = canvas.toDataURL("image/png");
