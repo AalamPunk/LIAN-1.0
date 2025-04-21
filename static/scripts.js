@@ -154,15 +154,12 @@ function clearMap() {
     endMarker = null;
 }
 
-var sidebarToggle = document.getElementById('toggleSidebar');
-if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-    });
-}
+document.getElementById('toggleSidebar')?.addEventListener('click', () => {
+    document.getElementById('sidebar')?.classList.toggle('collapsed');
+});
 
-document.getElementById('searchBtn').addEventListener('click', searchLocation);
-document.getElementById('searchInput').addEventListener('keypress', function(e) {
+document.getElementById('searchBtn')?.addEventListener('click', searchLocation);
+document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         searchLocation();
     }
@@ -191,24 +188,34 @@ function searchLocation() {
       });
 }
 
-var viewReportBtn = document.getElementById('viewReportBtn');
-if (viewReportBtn) {
-    viewReportBtn.addEventListener('click', function() {
-        var pdfContainer = document.getElementById('pdfContainer');
-        var isExpanded = pdfContainer.style.display === 'block';
-        pdfContainer.style.display = isExpanded ? 'none' : 'block';
-        viewReportBtn.setAttribute('aria-expanded', !isExpanded); // Update aria-expanded
-    });
-}
+document.getElementById('viewReportBtn')?.addEventListener('click', () => {
+    const pdfContainer = document.getElementById('pdfContainer');
+    const isExpanded = pdfContainer.style.display === 'block';
+    pdfContainer.style.display = isExpanded ? 'none' : 'block';
+    document.getElementById('viewReportBtn').setAttribute('aria-expanded', !isExpanded);
+});
 
-var screenshotBtn = document.getElementById('screenshotBtn');
-if (screenshotBtn) {
-    screenshotBtn.addEventListener('click', function() {
-        html2canvas(document.getElementById('map')).then(canvas => {
-            var link = document.createElement('a');
-            link.href = canvas.toDataURL("image/png");
-            link.download = 'final-path-screenshot.png';
-            link.click();
-        }).catch(error => console.error("Screenshot error:", error));
+document.getElementById('screenshotBtn')?.addEventListener('click', () => {
+    const mapContainer = document.getElementById('map');
+    const dataBar = document.getElementById('dataBar');
+    const originalDisplay = dataBar.style.display;
+    dataBar.style.display = 'block';
+
+    html2canvas(mapContainer, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scale: window.devicePixelRatio
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL("image/png");
+        link.download = 'final-path-screenshot.png';
+        link.click();
+
+        dataBar.style.display = originalDisplay;
+    }).catch(error => {
+        console.error("Screenshot failed:", error);
+        alert("Error capturing the map screenshot.");
+        dataBar.style.display = originalDisplay;
     });
-}
+});

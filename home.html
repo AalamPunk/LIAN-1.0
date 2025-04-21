@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lian - AI Geospatial Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Map Animation Styles */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        .map-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        .moving-lines {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: moveLines 40s linear infinite;
+        }
+        
+        @keyframes moveLines {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
+        }
+        
+        .path-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: rgba(59, 130, 246, 0.7);
+            border-radius: 50%;
+            animation: nodePulse 2s infinite alternate;
+        }
+        
+        @keyframes nodePulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(1.3); opacity: 1; }
+        }
+        
+        .path-line {
+            position: absolute;
+            background-color: rgba(59, 130, 246, 0.5);
+            transform-origin: left center;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .coming-soon {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .coming-soon::after {
+            content: "COMING SOON";
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background-color: #f59e0b;
+            color: white;
+            padding: 3px 30px;
+            font-size: 12px;
+            font-weight: bold;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.6s ease-in, transform 0.6s ease-in;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+        }
+        
+        .bounce-in {
+            animation: bounce 0.8s;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        
+        /* Hero content container */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="font-sans bg-white text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-map-marked-alt text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-blue-600">LIAN</span>
+                    </div>
+                </div>
+                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+                    <a href="#about" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">About</a>
+                    <a href="#products" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Products</a>
+                    <a href="#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">Contact</a>
+                    <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Try Visualizer</a>
+                </div>
+                <div class="-mr-2 flex items-center md:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Animated Map -->
+    <section class="pt-24 pb-16 md:pt-32 md:pb-24 relative h-screen flex items-center justify-center">
+        <div class="map-container absolute inset-0">
+            <div class="map-grid"></div>
+            <div class="moving-lines"></div>
+            <!-- Animated path nodes will be added by JavaScript -->
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="hero-content mx-auto max-w-3xl text-center">
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">Revolutionizing Location Intelligence with AI & Geospatial Insight</h1>
+                <p class="text-xl md:text-2xl text-gray-600 mb-8">Explore how algorithms navigate the world around us.</p>
+                <div class="flex justify-center space-x-4">
+                    <a href="http://127.0.0.1:5000" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 transform hover:scale-105 shadow-lg">
+                        Try the Visualizer
+                    </a>
+                    <a href="#about" class="bg-white hover:bg-gray-100 text-gray-800 font-bold py-3 px-8 rounded-lg transition duration-300 border border-gray-300">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
+                <p class="text-xl text-gray-600 max-w-4xl mx-auto">
+                    Lian combines cutting-edge AI with geospatial technology to create transparent, educational tools that help everyone understand how algorithms interpret and navigate our world. We believe in making complex pathfinding accessible through intuitive visualization.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-blue-50 p-8 rounded-xl fade-in">
+                    <div class="flex justify-center mb-4">
+                        <div class="bg-blue-100 p-4 rounded-full">
+                            <i class="fas fa-graduation-cap text-blue-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-center mb-3">Education</h3>
+                    <p class="text-gray-600 text-center">Interactive learning tools that make complex algorithms understandable for students and professionals alike.</p>
+                </div>
+                
+                <div class="bg-blue-50 p-8 rounded-xl fade-in">
+                    <div class="flex justify-center mb-4">
+                        <div class="bg-blue-100 p-4 rounded-full">
+                            <i class="fas fa-map-marked-alt text-blue-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-center mb-3">Real-World Mapping</h3>
+                    <p class="text-gray-600 text-center">Our algorithms work with actual geographic data to solve practical routing problems in realistic scenarios.</p>
+                </div>
+                
+                <div class="bg-blue-50 p-8 rounded-xl fade-in">
+                    <div class="flex justify-center mb-4">
+                        <div class="bg-blue-100 p-4 rounded-full">
+                            <i class="fas fa-eye text-blue-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-center mb-3">Algorithm Transparency</h3>
+                    <p class="text-gray-600 text-center">Step-by-step visualizations reveal how pathfinding algorithms make decisions, demystifying the "black box".</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Section -->
+    <section id="products" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Our Products</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Explore our suite of geospatial intelligence tools designed for education, research, and practical applications.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Pathfinding Visualizer Card -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md transition-all duration-300 card-hover fade-in">
+                    <div class="h-48 bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                        <i class="fas fa-project-diagram text-white text-6xl"></i>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex items-center mb-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">CORE PRODUCT</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Pathfinding Algorithm Visualizer</h3>
+                        <p class="text-gray-600 mb-6">Watch Dijkstra, A*, and more solve real-world routes on the map. See every step, from explored nodes to the shortest path.</p>
+                        <a href="http://127.0.0.1:5000" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                            Launch Visualizer
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- TradeAnalyzer Card -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md transition-all duration-300 card-hover fade-in coming-soon">
+                    <div class="h-48 bg-gradient-to-r from-gray-400 to-gray-500 flex items-center justify-center relative">
+                        <i class="fas fa-route text-white text-6xl"></i>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="pulse-animation text-white font-bold text-lg bg-yellow-500 px-4 py-2 rounded-full">Coming Soon</span>
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">TradeAnalyzer</h3>
+                        <p class="text-gray-600 mb-6">Our upcoming module for analyzing trade routes with AI and real-time data overlays. Optimize logistics and understand global trade patterns.</p>
+                        <a href="#" class="inline-flex items-center text-gray-500 font-medium cursor-not-allowed">
+                            Notify Me When Available
+                            <i class="fas fa-bell ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-900 text-white pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-map-marked-alt text-blue-400 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold">LIAN</span>
+                    </div>
+                    <p class="text-gray-400">Making geospatial intelligence accessible through AI-powered visualization and education.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Products</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Pathfinding Visualizer</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">TradeAnalyzer (Coming Soon)</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#about" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Connect</h3>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="https://github.com/AalamPunk/LIAN-1.0" class="text-gray-400 hover:text-white"><i class="fab fa-github text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin text-xl"></i></a>
+                    </div>
+                    
+                    <h4 class="text-sm font-semibold mb-2">GET UPDATES</h4>
+                    <div class="flex">
+                        <input type="email" placeholder="Your email" class="bg-gray-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500 w-full">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-md">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm mb-4 md:mb-0">© 2023 Lian. All rights reserved.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll animation for fade-in elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            const fadeInObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible', 'bounce-in');
+                        fadeInObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            fadeElements.forEach(element => {
+                fadeInObserver.observe(element);
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.querySelector('nav button');
+            mobileMenuButton.addEventListener('click', function() {
+                // This would toggle a mobile menu - implementation depends on your needs
+                console.log('Mobile menu clicked');
+            });
+            
+            // Create animated path nodes and connections
+            const mapContainer = document.querySelector('.map-container');
+            
+            // Create random nodes
+            const nodeCount = 15;
+            const nodes = [];
+            
+            for (let i = 0; i < nodeCount; i++) {
+                const node = document.createElement('div');
+                node.className = 'path-node';
+                
+                // Random position within container
+                const x = Math.random() * 90 + 5; // 5-95%
+                const y = Math.random() * 90 + 5; // 5-95%
+                
+                node.style.left = `${x}%`;
+                node.style.top = `${y}%`;
+                node.style.animationDelay = `${Math.random() * 2}s`;
+                
+                mapContainer.appendChild(node);
+                nodes.push({ element: node, x, y });
+            }
+            
+            // Create connections between some nodes
+            for (let i = 0; i < nodeCount; i++) {
+                for (let j = i + 1; j < nodeCount; j++) {
+                    // Only connect some nodes (about 30% chance)
+                    if (Math.random() < 0.3) {
+                        createConnection(nodes[i], nodes[j]);
+                    }
+                }
+            }
+            
+            function createConnection(node1, node2) {
+                const line = document.createElement('div');
+                line.className = 'path-line';
+                
+                // Calculate distance and angle between nodes
+                const dx = node2.x - node1.x;
+                const dy = node2.y - node1.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                // Position the line between the nodes
+                line.style.left = `${node1.x}%`;
+                line.style.top = `${node1.y}%`;
+                line.style.width = `${distance}%`;
+                line.style.height = '2px';
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                // Random animation
+                line.style.opacity = '0.5';
+                line.style.animation = `linePulse ${2 + Math.random() * 3}s infinite alternate`;
+                
+                mapContainer.appendChild(line);
+            }
+            
+            // Add some moving elements that look like pathfinding exploration
+            setInterval(() => {
+                // Create a temporary explorer node
+                const explorer = document.createElement('div');
+                explorer.className = 'path-node';
+                explorer.style.backgroundColor = 'rgba(16, 185, 129, 0.8)';
+                explorer.style.width = '12px';
+                explorer.style.height = '12px';
+                explorer.style.zIndex = '5';
+                
+                // Start at a random node
+                const startNode = nodes[Math.floor(Math.random() * nodes.length)];
+                let x = startNode.x;
+                let y = startNode.y;
+                
+                explorer.style.left = `${x}%`;
+                explorer.style.top = `${y}%`;
+                mapContainer.appendChild(explorer);
+                
+                // Animate to a few random nodes
+                let steps = 3 + Math.floor(Math.random() * 4);
+                let currentStep = 0;
+                let targetNode = null;
+                
+                const moveExplorer = () => {
+                    if (currentStep >= steps) {
+                        explorer.remove();
+                        return;
+                    }
+                    
+                    // Find a new target node
+                    targetNode = nodes[Math.floor(Math.random() * nodes.length)];
+                    
+                    // Calculate path to target
+                    const dx = (targetNode.x - x) / 30;
+                    const dy = (targetNode.y - y) / 30;
+                    
+                    let stepsTaken = 0;
+                    const moveStep = () => {
+                        x += dx;
+                        y += dy;
+                        explorer.style.left = `${x}%`;
+                        explorer.style.top = `${y}%`;
+                        
+                        stepsTaken++;
+                        
+                        if (stepsTaken < 30) {
+                            requestAnimationFrame(moveStep);
+                        } else {
+                            currentStep++;
+                            setTimeout(moveExplorer, 200);
+                        }
+                    };
+                    
+                    moveStep();
+                };
+                
+                setTimeout(moveExplorer, 500);
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
