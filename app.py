@@ -3,9 +3,104 @@ import math
 from flask import Flask, render_template, jsonify, request, send_file
 import osmnx as ox
 from haversine import haversine
-
-
+from flask import Flask, render_template, redirect, url_for, request, session
+from flask_sqlalchemy import SQLAlchemy
+from flask import flash
+from models import db, User  
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if not username or not password:
+            flash('Please fill out both fields.')
+            return render_template('register.html')
+
+        # Check if user already exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash('Username already exists.')
+            return render_template('register.html')
+
+        # Save password as plain text (not secure)
+        new_user = User(username=username, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('Registration successful! Please log in.')
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+
+# --- LOGIN SECTION START ---
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost:5432/LIAN'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+@app.route('/')
+def dashboard_wol():
+    return render_template('dashboard_wol.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        user = User.query.filter_by(username=username, password=password).first()
+        if user:
+            session['user'] = user.username
+            return redirect('/dashboard')
+        else:
+            return "Invalid credentials"
+    return render_template('login.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user' in session:
+        return render_template('dashboard.html', user=session['user'])
+    return redirect('/')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect('/')
+
+@app.route('/profile')
+def profile():
+    if 'user' in session:
+        user = User.query.filter_by(username=session['user']).first()
+        if user:
+            return render_template('profile.html', user=user)
+    return redirect('/')
+
+@app.route('/delete-profile', methods=['POST'])
+def delete_profile():
+    if 'user' in session:
+        user = User.query.filter_by(username=session['user']).first()
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            session.pop('user', None)
+            flash('Profile deleted successfully.')
+    return redirect('/')
+
+
+@app.route('/main')
+def main_app():
+    if 'user' in session:
+        # Add values as per your application's needs
+        return render_template('index.html', user=session['user'], default_lat=19.0760, default_lon=72.8777)
+    return redirect('/')
+
+# --- LOGIN SECTION END ---
 
 def haversine_distance(coord1, coord2):
     R = 6371  # Earth radius in km
@@ -158,8 +253,8 @@ def bellman_ford_path_with_steps(G, start, goal):
 @app.route('/')
 def index():
     # Default focus on Mumbai.
-    mumbai = {'lat': 19.0760, 'lon': 72.8777}
-    return render_template('index.html', default_lat=mumbai['lat'], default_lon=mumbai['lon'])
+    mumbai = {'lat': 19.0760, 'lon': 72.8777}  # Mumbai's coordinates
+    return render_template('index.html', default_lat=mumbai['lat'], default_lon=mumbai['lon'], autofocus_location=mumbai)
 
 @app.route('/get-path', methods=['POST'])
 def get_path():
@@ -268,7 +363,7 @@ def get_path():
 @app.route('/report')
 def report():
     # Update the path below if you move the file to another location (e.g., static folder)
-    return send_file(r'c:/Users/ozair/OneDrive/Documents/report .pdf', mimetype='application/pdf')
+    return send_file(r'c:/Users/ozair/OneDrive/Documents/LIAN_Report.pdf', mimetype='application/pdf')
 
 if __name__ == '__main__':
     app.run(debug=True)
