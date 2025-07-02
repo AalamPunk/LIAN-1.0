@@ -2,5 +2,5 @@ Flask
 folium
 osmnx
 networkx
-htmltocanvas
+
 SQLAlchemy>=1.4,<2.0
