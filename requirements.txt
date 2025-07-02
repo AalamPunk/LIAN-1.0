@@ -4,5 +4,6 @@ osmnx
 networkx
 haversine
 Flask-SQLAlchemy
+psycopg2-binary
 
 SQLAlchemy>=1.4,<2.0
