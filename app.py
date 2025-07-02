@@ -366,4 +366,5 @@ def report():
     return send_file(r'c:/Users/ozair/OneDrive/Documents/LIAN_Report.pdf', mimetype='application/pdf')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # default to 5000 locally
+    app.run(host="0.0.0.0", port=port, debug=True)
