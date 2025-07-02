@@ -3,5 +3,6 @@ folium
 osmnx
 networkx
 haversine
+Flask-SQLAlchemy
 
 SQLAlchemy>=1.4,<2.0
