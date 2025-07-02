@@ -39,7 +39,7 @@ def register():
 
 # --- LOGIN SECTION START ---
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost:5432/LIAN'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://lian_zo70_user:5Vbwn973IWui5TX68UQKsYBEWGWpsgsh@dpg-d1iqriripnbc73fuvhc0-a.oregon-postgres.render.com/lian_zo70'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
